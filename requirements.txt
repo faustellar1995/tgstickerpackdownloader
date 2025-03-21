@@ -1,0 +1,5 @@
+PyQt5
+requests
+ffmpeg-python
+numpy
+moviepy
