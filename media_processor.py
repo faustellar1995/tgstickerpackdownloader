@@ -33,14 +33,21 @@ def get_video_fps(video_path):
     return clip.fps
 
 def convert_mp4_to_gif(mp4_path, gif_path):
+    clip = mp.VideoFileClip(mp4_path)
+    width, height = clip.size
     fps = get_video_fps(mp4_path)
     (
         ffmpeg
         .input(mp4_path)
-        .output(gif_path, vf='scale=320:-1:flags=lanczos', pix_fmt='rgb8', r=fps)
+        .output(gif_path, vf=f'scale={width}:{height}:flags=lanczos', pix_fmt='yuv422p', r=fps)
         .run()
     )
     print(f'Converted {mp4_path} to {gif_path}')
+    # yuv420p: 8-bit YUV 4:2:0
+    # yuv422p: 8-bit YUV 4:2:2
+    # yuv444p: 8-bit YUV 4:4:4
+    # rgb24: 8-bit RGB
+    # gray: 8-bit grayscale
 
 def convert_mp4_to_png(mp4_path, png_path):
     clip = VideoFileClip(mp4_path)

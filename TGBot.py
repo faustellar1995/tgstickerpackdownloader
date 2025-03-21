@@ -9,6 +9,7 @@ import os
 import requests
 from zipfile import ZipFile
 from media_processor import batch_convert_mp4_to_gif_or_png  # Import the new module
+from concurrent.futures import ThreadPoolExecutor  # Import ThreadPoolExecutor
 
 class TGBot:
     def __init__(self, token):
@@ -75,7 +76,7 @@ class TGBot:
     
     def download_sticker_pack(self, sticker_set_name, directory):
         sticker_set = self.get_sticker_set(sticker_set_name)
-        if sticker_set["ok"]:
+        if (sticker_set["ok"]):
             stickers = sticker_set["result"]["stickers"]
             if not os.path.exists(directory):
                 os.makedirs(directory)
@@ -93,3 +94,22 @@ class TGBot:
         params = {"file_id": file_id}
         response = requests.get(url, params=params)
         return response.json()
+
+    def download_sticker_pack_n(self, sticker_set_name, directory, num_threads=8):
+        sticker_set = self.get_sticker_set(sticker_set_name)
+        if sticker_set["ok"]:
+            stickers = sticker_set["result"]["stickers"]
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            
+            def download_sticker_wrapper(sticker):
+                file_id = sticker["file_id"]
+                file_info = self.get_file_info(file_id)
+                file_path = file_info["result"]["file_path"]
+                is_animated = sticker["is_animated"] or sticker["is_video"]
+                self.download_sticker(file_path, file_id, directory, is_animated)
+            
+            with ThreadPoolExecutor(max_workers=num_threads) as executor:
+                executor.map(download_sticker_wrapper, stickers)
+        else:
+            print(f'Failed to get sticker set: {sticker_set_name}')

@@ -18,7 +18,10 @@ from pwd_manager import DirManager, DirManagerUI  # Update the path for pwd_mana
 class StickerDownloaderUI(QWidget):
     def __init__(self):
         super().__init__()
-        self.bot = TGBot("your-tokens")  # Use default token
+        token_file = os.path.join(os.path.dirname(__file__), 'mytoken.txt')
+        with open(token_file, 'r') as file:
+            token = file.read().strip()
+        self.bot = TGBot(token)  # Use token from mytoken.txt
         self.dir_manager = DirManager()  # Initialize DirManager
         self.initUI()
 
@@ -78,7 +81,7 @@ class StickerDownloaderUI(QWidget):
         download_dir = self.dir_manager.get_dirs()[0] if self.dir_manager.get_dirs() else "stickers"
         directory = os.path.join(download_dir, sticker_set_name)
         
-        self.bot.download_sticker_pack(sticker_set_name, directory)
+        self.bot.download_sticker_pack_n(sticker_set_name, directory)
         QMessageBox.information(self, 'Download Complete', f'Sticker pack "{sticker_set_name}" downloaded successfully.')
 
     def convert_stickers(self):
